@@ -1,0 +1,105 @@
+package zx.soft.data.verify.core;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.client.methods.HttpGet;
+import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import zx.soft.data.verify.common.Record;
+import zx.soft.data.verify.http.Http;
+import zx.soft.data.verify.io.MysqlClient;
+import zx.soft.data.verify.io.SolrClient;
+import zx.soft.data.verify.io.WriteException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class HandlerThread implements Runnable {
+
+    private static Logger LOG = LoggerFactory.getLogger(HandlerThread.class);
+
+    private Http http;
+
+    private MysqlClient mysqlClient;
+    private SolrClient solrClient;
+
+    private String filename;
+    private List<Record> records;
+
+    public HandlerThread(Http http, SolrClient solrClient, MysqlClient mysqlClient,
+                    String filename, List<Record> records) {
+        this.http = http;
+        this.solrClient = solrClient;
+        this.mysqlClient = mysqlClient;
+        this.records = records;
+        this.filename = filename;
+    }
+
+    @Override
+    public void run() {
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+        LOG.info(filename  + " fetch　record count:" + records.size());
+        for (Record record : records) {
+            try {
+                String id = record.getRecordId();
+                Map indexModel = solrClient.read(id);
+
+                if (indexModel == null) {
+                    LOG.warn("No record find in solr index: " + id);
+                    continue;
+                }
+
+                String url = (String) indexModel.get("url");
+                
+                double country_code = indexModel.get("country_code") == null ? 1 : (Double)indexModel.get("country_code");
+                if (country_code == 0 || url == null ||  url.matches("\\S+(twitter.com|weibo.com)\\S+")) {
+                    String json = gson.toJson(indexModel, Map.class);
+                    mysqlClient.write(filename, record.getKeyword(), json);
+                    continue;
+                }
+                
+                URI uri = new URI(url);
+                HttpGet get = new HttpGet(uri);
+
+                Document doc = http.get(get);
+                String content = TextExtract.parse(doc.html());
+
+                content = content == null ? "" : content;
+                indexModel.put("content", content);
+                String json = gson.toJson(indexModel, Map.class);
+                if (record.getKeyword() == null
+                                || record.getKeyword().trim().length() == 0) {
+                    if (content.trim().length() != 0)
+                        mysqlClient.write(filename, record.getKeyword(), json);
+                    continue;
+                }
+
+                String[] words = record.getKeyword().split("\\s+");
+                String title = indexModel.get("title") == null ? "" : (String) indexModel
+                                .get("title");
+                String tc = title + content;
+                boolean contain = true;
+                for (String word : words) {
+                    if (!tc.contains(word.toUpperCase()) && !tc.contains(word.toLowerCase())) {
+                        LOG.info(uri.toString() + " 不包含关键字:" + word);
+                        contain = false;
+                        break;
+                    }
+                }
+                if (contain)
+                    mysqlClient.write(filename, record.getKeyword(), json);
+            } catch (WriteException | URISyntaxException | IOException e) {
+                LOG.error("", e);
+            } catch (Exception e) {
+                LOG.error("Catch exception", e);
+            }
+        }
+        LOG.info("Finish fetch.");
+    }
+}
