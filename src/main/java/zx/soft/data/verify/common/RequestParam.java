@@ -8,33 +8,34 @@ import java.util.List;
  */
 public class RequestParam implements Serializable {
 
-    private static final long serialVersionUID = 3371695124531477865L;
+	private static final long serialVersionUID = 3371695124531477865L;
 
-    private String filename;
-    private List<Record> recs;
+	private String filename;
+	private List<Record> recs;
 
-    public RequestParam() {}
-    
-    public RequestParam(String filename, List<Record> recs) {
-        super();
-        this.filename = filename;
-        this.recs = recs;
-    }
+	public RequestParam() {
+	}
 
-    public String getFilename() {
-        return filename;
-    }
+	public RequestParam(String filename, List<Record> recs) {
+		super();
+		this.filename = filename;
+		this.recs = recs;
+	}
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
+	public String getFilename() {
+		return filename;
+	}
 
-    public List<Record> getRecs() {
-        return recs;
-    }
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
 
-    public void setRecs(List<Record> recs) {
-        this.recs = recs;
-    }
+	public List<Record> getRecs() {
+		return recs;
+	}
+
+	public void setRecs(List<Record> recs) {
+		this.recs = recs;
+	}
 
 }

@@ -1,77 +1,54 @@
 package zx.soft.data.verify.api;
 
-
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 启动服务类
+ *
+ * 启动命令：bin/tcl.sh start 8219
+ *
+ * @author wanggang
+ *
+ */
 public class BotServer {
 
-    private static Logger LOG = LoggerFactory.getLogger(BotServer.class);
+	private static Logger logger = LoggerFactory.getLogger(BotServer.class);
 
-    private Component component;
-    private BotApp app;
-    private int port;
-    private static boolean running;
+	private Component component;
+	private int port;
 
-    public BotServer(int port) {
-        this.port = port;
-        // Create a new Component.
-        component = new Component();
+	public BotServer(int port) {
+		this.port = port;
+		component = new Component();
+		component.getServers().add(Protocol.HTTP, port);
+		component.getDefaultHost().attach("/bot", new BotApp());
+		component.getContext().getParameters().set("maxThreads", "1000");
+	}
 
-        component.getServers().add(Protocol.HTTP, port);
+	public static void main(String[] args) throws Exception {
+		//		if (args.length == 0) {
+		//			System.out.println("Usage: BotServer <port>");
+		//			System.exit(-1);
+		//		}
+		//		int port = Integer.valueOf(args[0]);
+		BotServer server = new BotServer(8888);
 
-        // Attach the application.
-        app = new BotApp();
+		server.start();
+	}
 
-        component.getDefaultHost().attach("/bot", app);
+	public void start() throws Exception {
+		logger.info("Starting data-verify on port " + port + "...");
+		component.start();
+		logger.info("Started data-verify on port " + port);
+	}
 
-        component.getContext().getParameters().set("maxThreads", "1000");
+	public void stop() throws Exception {
+		logger.info("Stopping data-verify on port " + port + "...");
+		component.stop();
+		logger.info("Stoped data-verify on port " + port + "...");
+	}
 
-        BotApp.server = this;
-    }
-
-    public static boolean isRunning() {
-        return running;
-    }
-
-    public void start() throws Exception {
-        LOG.info("Starting DataVerificationBot on port " + port + "...");
-        component.start();
-        LOG.info("Started DataVerificationBot on port " + port);
-        running = true;
-        BotApp.started = System.currentTimeMillis();
-    }
-
-    public boolean canStop() throws Exception {
-        return false;
-    }
-
-    public boolean stop(boolean force) throws Exception {
-        if (!running) {
-            return true;
-        }
-        if (!canStop() && !force) {
-            LOG.warn("Running jobs - can't stop now.");
-            return false;
-        }
-        LOG.info("Stopping DataVerificationBot on port " + port + "...");
-        component.stop();
-        LOG.info("Stopped DataVerificationBot on port " + port);
-        running = false;
-        return true;
-    }
-
-    public static void main(String[] args) throws Exception {
-        if (args == null || args.length == 0) {
-            System.out.println("usage: BotServer port");
-            System.exit(-1);
-        }
-            
-        int port = Integer.valueOf(args[0]);
-        BotServer server = new BotServer(port);
-        
-        server.start();
-    }
 }

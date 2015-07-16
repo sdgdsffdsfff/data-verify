@@ -22,84 +22,87 @@ import com.google.gson.GsonBuilder;
 
 public class HandlerThread implements Runnable {
 
-    private static Logger LOG = LoggerFactory.getLogger(HandlerThread.class);
+	private static Logger logger = LoggerFactory.getLogger(HandlerThread.class);
 
-    private Http http;
+	private Http http;
 
-    private MysqlClient mysqlClient;
-    private SolrClient solrClient;
+	private MysqlClient mysqlClient;
+	private SolrClient solrClient;
 
-    private String filename;
-    private List<Record> records;
+	private String filename;
+	private List<Record> records;
 
-    public HandlerThread(Http http, SolrClient solrClient, MysqlClient mysqlClient,
-                    String filename, List<Record> records) {
-        this.http = http;
-        this.solrClient = solrClient;
-        this.mysqlClient = mysqlClient;
-        this.records = records;
-        this.filename = filename;
-    }
+	public HandlerThread(Http http, SolrClient solrClient, MysqlClient mysqlClient, String filename,
+			List<Record> records) {
+		this.http = http;
+		this.solrClient = solrClient;
+		this.mysqlClient = mysqlClient;
+		this.records = records;
+		this.filename = filename;
+	}
 
-    @Override
-    public void run() {
-        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-        LOG.info(filename  + " fetch　record count:" + records.size());
-        for (Record record : records) {
-            try {
-                String id = record.getRecordId();
-                Map indexModel = solrClient.read(id);
+	@Override
+	public void run() {
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		logger.info(filename + " fetch　record count:" + records.size());
+		for (Record record : records) {
+			try {
+				String id = record.getRecordId();
+				Map indexModel = solrClient.read(id);
 
-                if (indexModel == null) {
-                    LOG.warn("No record find in solr index: " + id);
-                    continue;
-                }
+				if (indexModel == null) {
+					logger.warn("No record find in solr index: " + id);
+					continue;
+				}
 
-                String url = (String) indexModel.get("url");
-                
-                double country_code = indexModel.get("country_code") == null ? 1 : (Double)indexModel.get("country_code");
-                if (country_code == 0 || url == null ||  url.matches("\\S+(twitter.com|weibo.com)\\S+")) {
-                    String json = gson.toJson(indexModel, Map.class);
-                    mysqlClient.write(filename, record.getKeyword(), json);
-                    continue;
-                }
-                
-                URI uri = new URI(url);
-                HttpGet get = new HttpGet(uri);
+				String url = (String) indexModel.get("url");
 
-                Document doc = http.get(get);
-                String content = TextExtract.parse(doc.html());
+				double country_code = indexModel.get("country_code") == null ? 1 : (Double) indexModel
+						.get("country_code");
+				if (country_code == 0 || url == null || url.matches("\\S+(twitter.com|weibo.com)\\S+")) {
+					String json = gson.toJson(indexModel, Map.class);
+					mysqlClient.write(filename, record.getKeyword(), json);
+					continue;
+				}
 
-                content = content == null ? "" : content;
-                indexModel.put("content", content);
-                String json = gson.toJson(indexModel, Map.class);
-                if (record.getKeyword() == null
-                                || record.getKeyword().trim().length() == 0) {
-                    if (content.trim().length() != 0)
-                        mysqlClient.write(filename, record.getKeyword(), json);
-                    continue;
-                }
+				URI uri = new URI(url);
+				HttpGet get = new HttpGet(uri);
 
-                String[] words = record.getKeyword().split("\\s+");
-                String title = indexModel.get("title") == null ? "" : (String) indexModel
-                                .get("title");
-                String tc = title + content;
-                boolean contain = true;
-                for (String word : words) {
-                    if (!tc.contains(word.toUpperCase()) && !tc.contains(word.toLowerCase())) {
-                        LOG.info(uri.toString() + " 不包含关键字:" + word);
-                        contain = false;
-                        break;
-                    }
-                }
-                if (contain)
-                    mysqlClient.write(filename, record.getKeyword(), json);
-            } catch (WriteException | URISyntaxException | IOException e) {
-                LOG.error("", e);
-            } catch (Exception e) {
-                LOG.error("Catch exception", e);
-            }
-        }
-        LOG.info("Finish fetch.");
-    }
+				Document doc = http.get(get);
+				String content = TextExtract.parse(doc.html());
+
+				if (content == null) {
+					content = "";
+				}
+
+				indexModel.put("content", content);
+				String json = gson.toJson(indexModel, Map.class);
+				if (record.getKeyword() == null || record.getKeyword().trim().length() == 0) {
+					if (content.trim().length() != 0)
+						mysqlClient.write(filename, record.getKeyword(), json);
+					continue;
+				}
+
+				String[] words = record.getKeyword().split("\\s+");
+				String title = indexModel.get("title") == null ? "" : (String) indexModel.get("title");
+				String tc = title + content;
+				boolean contain = true;
+				for (String word : words) {
+					if (!tc.contains(word.toUpperCase()) && !tc.contains(word.toLowerCase())) {
+						logger.info(uri.toString() + " 不包含关键字:" + word);
+						contain = false;
+						break;
+					}
+				}
+				if (contain)
+					mysqlClient.write(filename, record.getKeyword(), json);
+			} catch (WriteException | URISyntaxException | IOException e) {
+				logger.error("", e);
+			} catch (Exception e) {
+				logger.error("Catch exception", e);
+			}
+		}
+		logger.info("Finish fetch.");
+	}
+
 }
