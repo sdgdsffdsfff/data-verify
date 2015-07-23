@@ -1,11 +1,15 @@
-DataVerificationBot
-===
 
-提供OA导出数据验证服务，主要是验证网页内容是否仍然存在，
+## 数据导出验证模块
+
+> 提供OA导出数据验证服务，主要是验证网页内容是否仍然存在，
 1. 若存在，在更新网页在solr索引里的内容,导出最新数据到mysql；
 2. 若不存在，则不对solr索引进行操作，忽略导出到mysql。
 
 提供给OA的接口描述如下:
+
+### 打包部署
+
+`打包`：mvn clean package -Dmaven.test.skip=true
 
 ### 验证
 

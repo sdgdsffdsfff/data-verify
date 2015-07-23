@@ -1,0 +1,19 @@
+<configuration>
+    <capacity>100</capacity>
+    <!-- 写Solr不需要 -->
+    <solrWriteAddr>192.168.31.11:8900</solrWriteAddr> 
+    <solrReadAddr>192.168.31.11:8983</solrReadAddr>
+    <mysqlConf>
+        <url>jdbc:mysql://localhost:3306/crawler</url>
+        <username>root</username>
+        <password>root</password>
+    </mysqlConf>
+    <proxy>
+        <ip>192.168.25.254</ip>
+        <port>28129</port>
+        <username>yproxyq</username>
+        <password>zproxyx0#</password>
+    </proxy>
+    <queueSize>1000</queueSize>
+</configuration>
+

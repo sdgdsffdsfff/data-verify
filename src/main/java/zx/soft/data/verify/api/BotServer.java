@@ -29,12 +29,12 @@ public class BotServer {
 	}
 
 	public static void main(String[] args) throws Exception {
-		//		if (args.length == 0) {
-		//			System.out.println("Usage: BotServer <port>");
-		//			System.exit(-1);
-		//		}
-		//		int port = Integer.valueOf(args[0]);
-		BotServer server = new BotServer(8888);
+		if (args.length == 0) {
+			System.out.println("Usage: BotServer <port>");
+			System.exit(-1);
+		}
+		int port = Integer.valueOf(args[0]);
+		BotServer server = new BotServer(port);
 
 		server.start();
 	}

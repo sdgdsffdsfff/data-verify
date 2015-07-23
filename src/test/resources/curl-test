@@ -2,9 +2,12 @@
 
 1. POST
 
-curl -X POST -H 'Content-Type:application/json' http://localhost:8888/bot/verify --data '{"filename":"test0", "recs":[{"recordId":"9A1090C920AFC18193ACA11A3DB70DB7","keyword":"合肥"},{"recordId":"0C64F84C8B7335A25365054F8B039B49","keyword":"广场"}]}'
+$ curl -X POST -H 'Content-Type:application/json' http://localhost:8888/bot/verify --data '{"filename":"test0", "recs":[{"recordId":"9A1090C920AFC18193ACA11A3DB70DB7","keyword":"合肥"},{"recordId":"0C64F84C8B7335A25365054F8B039B49","keyword":"广场"}]}'
 
+$ curl -X POST -H 'Content-Type:application/json' http://192.168.25.31:8219/bot/verify --data '{"filename":"test0", "recs":[{"recordId":"9A1090C920AFC18193ACA11A3DB70DB7","keyword":"合肥"},{"recordId":"0C64F84C8B7335A25365054F8B039B49","keyword":"广场"}]}'
 
 2. GET
 
-http://localhost:8888/bot/verify?filename=test0&start=0&rows=100
+$ curl http://localhost:8888/bot/verify?filename=test0&start=0&rows=100
+
+$ curl http://192.168.25.31:8219/bot/verify?filename=test0&start=0&rows=100
