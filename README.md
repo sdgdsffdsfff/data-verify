@@ -12,6 +12,7 @@
 `打包`：mvn clean package -Dmaven.test.skip=true
 `部署`：scp target/data-verify-1.2.0-distribution.tar.gz user2@dataverify:~/
 `启动`：tar -zxvf data-verify-1.2.0-distribution.tar.gz; cd data-verify; bin/ctl.sh start 8279
+`停止`：bin/ctl.sh stop; rm -r data-verify*
 
 ### 接口服务
 

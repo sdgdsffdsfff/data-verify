@@ -2,6 +2,10 @@ package zx.soft.data.verify.api.impl;
 
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +17,7 @@ import zx.soft.data.verify.api.BotManager;
 import zx.soft.data.verify.common.Configuration;
 import zx.soft.data.verify.common.RequestParam;
 import zx.soft.data.verify.common.RetCode;
+import zx.soft.data.verify.common.VerifiedData;
 import zx.soft.data.verify.common.VerifiedDataCollection;
 import zx.soft.data.verify.core.HandlerThread;
 import zx.soft.data.verify.http.Http;
@@ -66,7 +71,20 @@ public class RAMBotManager implements BotManager {
 	@Override
 	public VerifiedDataCollection download(String filename, int start, int rows) {
 		VerifiedDataCollection co = mysqlClient.get(filename, start, rows);
-		return co;
+		// 数据返回之前需要作数据去重
+		return duplicateByUrl(co);
+	}
+
+	public static VerifiedDataCollection duplicateByUrl(VerifiedDataCollection original) {
+		List<VerifiedData> records = new ArrayList<>();
+		Set<String> set = new TreeSet<>();
+		for (VerifiedData record : original.getRecords()) {
+			if (!set.contains(record.getRecord().get("url").toString())) {
+				records.add(record);
+			}
+			set.add(record.getRecord().get("url").toString());
+		}
+		return new VerifiedDataCollection(records.size(), records);
 	}
 
 }

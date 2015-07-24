@@ -41,6 +41,7 @@ public class HandlerThread implements Runnable {
 		this.filename = filename;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void run() {
 		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
