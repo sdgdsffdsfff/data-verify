@@ -13,6 +13,7 @@
 `部署`：scp target/data-verify-1.2.0-distribution.tar.gz user2@dataverify:~/
 `启动`：tar -zxvf data-verify-1.2.0-distribution.tar.gz; cd data-verify; bin/ctl.sh start 8279
 `停止`：bin/ctl.sh stop; rm -r data-verify*
+`运行验证数据定时清理脚本`: bin/timer.sh &
 
 ### 接口服务
 
