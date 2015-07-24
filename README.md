@@ -10,30 +10,25 @@
 ### 打包部署
 
 `打包`：mvn clean package -Dmaven.test.skip=true
+`部署`：scp target/data-verify-1.2.0-distribution.tar.gz user2@dataverify:~/
+`启动`：tar -zxvf data-verify-1.2.0-distribution.tar.gz; cd data-verify; bin/ctl.sh start 8279
 
-### 验证
+### 接口服务
 
-Method: Post
-
-Path: /bot/verify
-示例: 
+#### POST
 
 ```bash
-curl -X POST -H 'Content-Type:application/json' http://192.168.4.137:8219/bot/verify \
---data '{"filename":"test0", "recs":[{"recordId":"67263CE8357F83BDA4DCC666F41FC88D","keyword":"黑火药 东莞"}, \
-{"recordId":"800A43BE80146DE7ABE4A18CBF499E83","keyword":"东阳市 副书记"}]}'
+curl -X POST -H 'Content-Type:application/json' http://192.168.25.31:8279/bot/verify --data '{"filename":"test0", "recs":[{"recordId":"9A1090C920AFC18193ACA11A3DB70DB7","keyword":"合肥"},{"recordId":"0C64F84C8B7335A25365054F8B039B49","keyword":"广场"}]}'
 ```
 
-Parameters:
+`参数描述`
 
 参数名 | 类型  | 描述
 -------| ----- |-------
 filename| String|文件名, 每次OA请求时的唯一标识，由OA提供，以供查询
 records | List<Record> | Record集合,Record包含recordId和keyword字段，recordId是在solr索引中的数据id；keyword是命中关键词,用户勾选的记录中命中的关键词，DataVerificationBot需要根据关键词来验证内容是否符合
 
-
-
-Return Type: Json
+`成功返回结果`
 
 ```json
 {
@@ -43,21 +38,20 @@ Return Type: Json
 }
 ```
 
-
-DataVerificationBot验证完后写入mysql数据，写入表及字段结构定义如下:
+> 验证完后写入mysql数据，写入表及字段结构定义如下:
 
 字段    | 描述
 -------- | -------
 filename  | 文件名，共OA查询下载
 record    | Json格式
 
-### 获取结果
-Method: Get
+#### GET
 
-Path: /bot/verify
-示例: http://192.168.4.137:8219/bot/verify?filename=test0&start=0&rows=100
+```bash
+curl http://192.168.25.31:8279/bot/verify?filename=test0&start=0&rows=100
+```
 
-Parameters:
+`参数描述`
 
 参数名 | 描述
 -------|-------
@@ -65,9 +59,7 @@ filename | 文件名
 start | 分页起始
 rows  | 一页记录数
 
-Return: 文件名是filename的数据
-
-Return Type: Json
+`成功返回结果`
 
 ```json
 {
@@ -84,7 +76,9 @@ Return Type: Json
 }
 ```
 
-###问题
-1. 关于境外的网站需要连接VPN
-2. 微博类没有处理
+### 相关问题
+
+>1. 关于境外的网站需要连接VPN
+
+>2. 微博类没有处理
 
