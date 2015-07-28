@@ -1,12 +1,10 @@
 package zx.soft.data.verify.core;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.client.methods.HttpGet;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +64,11 @@ public class HandlerThread implements Runnable {
 					continue;
 				}
 
-				URI uri = new URI(url);
-				HttpGet get = new HttpGet(uri);
-
-				Document doc = http.get(get);
-				String content = TextExtract.parse(doc.html());
+				Document doc = http.get(url);
+				String content = "";
+				if (doc != null) {
+					content = TextExtract.parse(doc.html());
+				}
 
 				if (content == null) {
 					content = "";
@@ -90,7 +88,7 @@ public class HandlerThread implements Runnable {
 				boolean contain = true;
 				for (String word : words) {
 					if (!tc.contains(word.toUpperCase()) && !tc.contains(word.toLowerCase())) {
-						logger.info(uri.toString() + " 不包含关键字:" + word);
+						logger.info("`" + url + "` 不包含关键字:" + word);
 						contain = false;
 						break;
 					}

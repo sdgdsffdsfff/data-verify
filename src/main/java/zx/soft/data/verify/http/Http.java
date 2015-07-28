@@ -1,6 +1,7 @@
 package zx.soft.data.verify.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -33,6 +34,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import zx.soft.utils.log.LogbackUtil;
 
 public class Http {
 
@@ -70,10 +73,10 @@ public class Http {
 			}
 		}
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-		// 最大所有链接数200
-		cm.setMaxTotal(200);
-		// 每个路由的默认最大链接数20
-		cm.setDefaultMaxPerRoute(20);
+		// 最大所有链接数
+		cm.setMaxTotal(800);
+		// 每个路由的默认最大链接数
+		cm.setDefaultMaxPerRoute(400);
 
 		http = HttpClients.custom().setRetryHandler(myRetryHandler).setRoutePlanner(routePlanner)
 				.setConnectionManager(cm).setDefaultCredentialsProvider(credsProvider)
@@ -81,8 +84,9 @@ public class Http {
 
 	}
 
-	public Document get(HttpGet get) throws HttpException, IOException {
+	public Document get(String url) {
 
+		HttpGet get = new HttpGet(url);
 		get.setHeader("User-Agent",
 				"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36");
 		get.setHeader("Accept-Encoding", "gzip, deflate, sdch");
@@ -92,6 +96,7 @@ public class Http {
 
 		HttpResponse resp = null;
 		Document document = null;
+		InputStream is = null;
 		try {
 			resp = http.execute(get, context);
 			int code = resp.getStatusLine().getStatusCode();
@@ -142,18 +147,26 @@ public class Http {
 			}
 
 			if (!deal) {
-				throw new HttpException("code:" + code);
+				logger.error("Error code:{}", code);
+				return null;
 			}
 
 			HttpEntity ent = resp.getEntity();
-			ByteBuffer byteData = DataUtil.readToByteBuffer(ent.getContent());
+			is = ent.getContent();
+			ByteBuffer byteData = DataUtil.readToByteBuffer(is);
 			Header header = ent.getContentEncoding();
-			String charset = header == null ? null : header.getValue();
+			String charset = (header == null) ? null : header.getValue();
 			document = DataUtil.parseByteData(byteData, charset, uri.toString(), Parser.htmlParser());
 			byteData.rewind();
 		} catch (IOException e) {
-			throw new HttpException("访问出错:" + e.getMessage(), e);
+			logger.error("IOException:{}", LogbackUtil.expection2Str(e));
 		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				logger.error("IOException:{}", LogbackUtil.expection2Str(e));
+			}
+			//			get.abort();
 			get.releaseConnection();
 		}
 

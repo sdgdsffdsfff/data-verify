@@ -24,24 +24,27 @@ public class DataUtil {
 	static ByteBuffer readToByteBuffer(InputStream inStream, int maxSize) throws IOException {
 		final boolean capped = maxSize > 0;
 		byte[] buffer = new byte[bufferSize];
-		ByteArrayOutputStream outStream = new ByteArrayOutputStream(bufferSize);
-		int read;
-		int remaining = maxSize;
+		ByteBuffer byteData = null;
+		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream(bufferSize);) {
+			int read;
+			int remaining = maxSize;
 
-		while (true) {
-			read = inStream.read(buffer);
-			if (read == -1)
-				break;
-			if (capped) {
-				if (read > remaining) {
-					outStream.write(buffer, 0, remaining);
+			while (true) {
+				read = inStream.read(buffer);
+				if (read == -1)
 					break;
+				if (capped) {
+					if (read > remaining) {
+						outStream.write(buffer, 0, remaining);
+						break;
+					}
+					remaining -= read;
 				}
-				remaining -= read;
+				outStream.write(buffer, 0, read);
 			}
-			outStream.write(buffer, 0, read);
+			byteData = ByteBuffer.wrap(outStream.toByteArray());
 		}
-		ByteBuffer byteData = ByteBuffer.wrap(outStream.toByteArray());
+
 		return byteData;
 	}
 

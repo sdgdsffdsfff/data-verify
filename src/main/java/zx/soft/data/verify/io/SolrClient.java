@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
@@ -43,8 +42,7 @@ public class SolrClient {
 				.setParameter("q", para_id).setParameter("wt", "json")
 				// .setParameter("indent", "true")
 				.build();
-		HttpGet get = new HttpGet(uri);
-		Document doc = http.get(get);
+		Document doc = http.get(uri.getScheme());
 		String json = doc.body().text();
 		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
