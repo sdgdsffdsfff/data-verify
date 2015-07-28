@@ -13,6 +13,7 @@ import zx.soft.data.verify.common.Record;
 import zx.soft.data.verify.common.RequestParam;
 
 public class TestAPI {
+
 	private static String baseUrl = "http://localhost:8279/bot/";
 	private static BotServer server;
 
@@ -53,4 +54,5 @@ public class TestAPI {
 		client.addQueryParameter("filename", "test0");
 		System.out.println(client.get().getText());
 	}
+
 }
