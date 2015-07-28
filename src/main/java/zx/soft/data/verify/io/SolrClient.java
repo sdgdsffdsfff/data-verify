@@ -42,7 +42,7 @@ public class SolrClient {
 				.setParameter("q", para_id).setParameter("wt", "json")
 				// .setParameter("indent", "true")
 				.build();
-		Document doc = http.get(uri.getScheme());
+		Document doc = http.get(uri.toString());
 		String json = doc.body().text();
 		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
