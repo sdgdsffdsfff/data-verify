@@ -48,7 +48,7 @@ public class HttpAdvanced {
 			try {
 				resp = httpClient.execute(get);
 			} catch (IOException e) {
-				logger.error("IOException:{},url:{}", LogbackUtil.expection2Str(e), url);
+				logger.error("IOException:{}, url:{}", LogbackUtil.expection2Str(e), url);
 				return null;
 			}
 			int code = resp.getStatusLine().getStatusCode();
@@ -109,7 +109,7 @@ public class HttpAdvanced {
 			try (InputStream is = ent.getContent();) {
 				byteData = DataUtil.readToByteBuffer(is);
 			} catch (IllegalStateException | IOException e) {
-				logger.error("IOException:{}", LogbackUtil.expection2Str(e));
+				logger.error("IOException:{}, url:{}", LogbackUtil.expection2Str(e), url);
 				return null;
 			}
 			Header header = ent.getContentEncoding();
@@ -126,7 +126,7 @@ public class HttpAdvanced {
 				}
 				httpClient.close();
 			} catch (IOException e) {
-				logger.error("IOException:{},url:{}", LogbackUtil.expection2Str(e), url);
+				logger.error("IOException:{}, url:{}", LogbackUtil.expection2Str(e), url);
 			}
 		}
 

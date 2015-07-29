@@ -10,6 +10,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
@@ -29,6 +31,8 @@ import com.mysql.jdbc.Driver;
 import com.thoughtworks.xstream.XStream;
 
 public class RAMBotManager implements BotManager {
+
+	private static Logger logger = LoggerFactory.getLogger(RAMBotManager.class);
 
 	private static ThreadPoolExecutor exec;
 	private static int capacity;
@@ -72,6 +76,7 @@ public class RAMBotManager implements BotManager {
 	@Override
 	public VerifiedDataCollection download(String filename, int start, int rows) {
 		VerifiedDataCollection co = mysqlClient.get(filename, start, rows);
+		logger.info("Filename:{} original size:{}", filename, co.getRecords().size());
 		// 数据返回之前需要作数据去重
 		return duplicateByUrl(co);
 	}
