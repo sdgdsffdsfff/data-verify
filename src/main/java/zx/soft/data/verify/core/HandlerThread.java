@@ -10,10 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.data.verify.common.Record;
-import zx.soft.data.verify.http.Http;
+import zx.soft.data.verify.http.HttpAdvanced;
 import zx.soft.data.verify.io.MysqlClient;
 import zx.soft.data.verify.io.SolrClient;
 import zx.soft.data.verify.io.WriteException;
+import zx.soft.utils.log.LogbackUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,7 +23,7 @@ public class HandlerThread implements Runnable {
 
 	private static Logger logger = LoggerFactory.getLogger(HandlerThread.class);
 
-	private Http http;
+	private HttpAdvanced http;
 
 	private MysqlClient mysqlClient;
 	private SolrClient solrClient;
@@ -30,7 +31,7 @@ public class HandlerThread implements Runnable {
 	private String filename;
 	private List<Record> records;
 
-	public HandlerThread(Http http, SolrClient solrClient, MysqlClient mysqlClient, String filename,
+	public HandlerThread(HttpAdvanced http, SolrClient solrClient, MysqlClient mysqlClient, String filename,
 			List<Record> records) {
 		this.http = http;
 		this.solrClient = solrClient;
@@ -66,10 +67,11 @@ public class HandlerThread implements Runnable {
 
 				Document doc = http.get(url);
 				String content = "";
-				if (doc != null) {
-					content = TextExtract.parse(doc.html());
+				if (doc == null) {
+					continue;
 				}
 
+				content = TextExtract.parse(doc.html());
 				if (content == null) {
 					content = "";
 				}
@@ -98,7 +100,7 @@ public class HandlerThread implements Runnable {
 			} catch (WriteException | URISyntaxException | IOException e) {
 				logger.error("", e);
 			} catch (Exception e) {
-				logger.error("Catch exception", e);
+				logger.error("Catch exception", LogbackUtil.expection2Str(e));
 			}
 		}
 		logger.info("Finish fetch.");

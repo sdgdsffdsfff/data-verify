@@ -20,7 +20,7 @@ import zx.soft.data.verify.common.RetCode;
 import zx.soft.data.verify.common.VerifiedData;
 import zx.soft.data.verify.common.VerifiedDataCollection;
 import zx.soft.data.verify.core.HandlerThread;
-import zx.soft.data.verify.http.Http;
+import zx.soft.data.verify.http.HttpAdvanced;
 import zx.soft.data.verify.io.MysqlClient;
 import zx.soft.data.verify.io.MysqlConf;
 import zx.soft.data.verify.io.SolrClient;
@@ -32,7 +32,7 @@ public class RAMBotManager implements BotManager {
 
 	private static ThreadPoolExecutor exec;
 	private static int capacity;
-	private static Http http;
+	private static HttpAdvanced http;
 	private static SolrClient solrClient;
 	private static MysqlClient mysqlClient;
 
@@ -45,8 +45,9 @@ public class RAMBotManager implements BotManager {
 
 		exec = new ThreadPoolExecutor(10, capacity, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(capacity));
 
-		solrClient = new SolrClient(new Http(null), conf.getSolrWriteAddr(), conf.getSolrReadAddr());
-		http = new Http(null);
+		// 未使用代理
+		http = new HttpAdvanced(null);
+		solrClient = new SolrClient(http, conf.getSolrWriteAddr(), conf.getSolrReadAddr());
 
 		Driver driver = null;
 		try {

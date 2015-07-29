@@ -3,18 +3,15 @@ package zx.soft.data.verify.io;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import zx.soft.data.verify.common.RecordInfoCollection;
-import zx.soft.data.verify.http.Http;
+import zx.soft.data.verify.http.HttpAdvanced;
 import zx.soft.data.verify.http.HttpException;
 
 import com.google.gson.Gson;
@@ -26,11 +23,11 @@ public class SolrClient {
 
 	private static Logger logger = LoggerFactory.getLogger(SolrClient.class);
 
-	private Http http;
+	private HttpAdvanced http;
 	private String writeAddr;
 	private String readAddr;
 
-	public SolrClient(Http http, String writeAddr, String readAddr) {
+	public SolrClient(HttpAdvanced http, String writeAddr, String readAddr) {
 		this.http = http;
 		this.writeAddr = writeAddr;
 		this.readAddr = readAddr;
@@ -57,14 +54,9 @@ public class SolrClient {
 	}
 
 	public void write(RecordInfoCollection co) throws IOException, URISyntaxException, HttpException {
-		Http http = new Http(null);
 		URI uri = new URIBuilder().setScheme("http").setHost(writeAddr).setPath("/sentiment/index").build();
-		HttpPost post = new HttpPost(uri);
-		StringEntity entity = new StringEntity(co.toString(), Charset.forName("UTF-8"));
-		post.setEntity(entity);
-		post.setHeader("Content-Type", "application/json");
-		Document doc = http.post(post);
-		logger.info(doc.body().text());
+		String doc = http.post(uri.toString(), co.toString());
+		logger.info(doc);
 	}
 
 }
